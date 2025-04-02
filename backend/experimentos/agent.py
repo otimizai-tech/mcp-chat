@@ -1,3 +1,6 @@
+# APENAS O EXEMPLO DO OPEN MCP CLIENT
+
+
 """
 This is the main entry point for the agent.
 It defines the workflow graph, state, tools, nodes and edges.
@@ -11,6 +14,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
 from copilotkit import CopilotKitState
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.prebuilt import create_react_agent
 import os
 
 # Define the connection type structures
@@ -23,17 +27,26 @@ class SSEConnection(TypedDict):
     url: str
     transport: Literal["sse"]
 
+# Type for MCP configuration
 MCPConfig = Dict[str, Union[StdioConnection, SSEConnection]]
 
 class AgentState(CopilotKitState):
     """
-    Defines the state of the agent, including optional MCP configuration.
+    Here we define the state of the agent
+
+    In this instance, we're inheriting from CopilotKitState, which will bring in
+    the CopilotKitState fields. We're also adding a custom field, `mcp_config`,
+    which will be used to configure MCP services for the agent.
     """
+    # Define mcp_config as an optional field without skipping validation
     mcp_config: Optional[MCPConfig]
 
+# Default MCP configuration to use when no configuration is provided in the state
+# Uses relative paths that will work within the project structure
 DEFAULT_MCP_CONFIG: MCPConfig = {
     "math": {
         "command": "python",
+        # Use a relative path that will be resolved based on the current working directory
         "args": [os.path.join(os.path.dirname(__file__), "..", "math_server.py")],
         "transport": "stdio",
     },
@@ -41,38 +54,44 @@ DEFAULT_MCP_CONFIG: MCPConfig = {
 
 async def chat_node(state: AgentState, config: RunnableConfig) -> Command[Literal["__end__"]]:
     """
-    Uses OpenRouter as the LLM instead of a ReAct agent.
+    This is a simplified agent that uses the ReAct agent as a subgraph.
+    It handles both chat responses and tool execution in one node.
     """
+    # Get MCP configuration from state, or use the default config if not provided
     mcp_config = state.get("mcp_config", DEFAULT_MCP_CONFIG)
 
     print(f"mcp_config: {mcp_config}, default: {DEFAULT_MCP_CONFIG}")
     
+    # Set up the MCP client and tools using the configuration from state
     async with MultiServerMCPClient(mcp_config) as mcp_client:
+        # Get the tools
         mcp_tools = mcp_client.get_tools()
         
-        model = ChatOpenAI(
-            model="google/gemini-2.5-pro-exp-02-05:free",  
-            openai_api_key="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",  
-            openai_api_base="https://openrouter.ai/api/v1"  
-        )
-
+        # Create the react agent
+        model = ChatOpenAI(model="gpt-4o")
+        react_agent = create_react_agent(model, mcp_tools)
+        
+        # Prepare messages for the react agent
         agent_input = {
             "messages": state["messages"]
         }
         
-        agent_response = await model.ainvoke(agent_input)
+        # Run the react agent subgraph with our input
+        agent_response = await react_agent.ainvoke(agent_input)
         
+        # Update the state with the new messages
         updated_messages = state["messages"] + agent_response.get("messages", [])
         
+        # End the graph with the updated messages
         return Command(
             goto=END,
             update={"messages": updated_messages},
         )
 
-# Definir o workflow graph
+# Define the workflow graph with only a chat node
 workflow = StateGraph(AgentState)
 workflow.add_node("chat_node", chat_node)
 workflow.set_entry_point("chat_node")
 
-# Compilar o workflow graph
+# Compile the workflow graph
 graph = workflow.compile(MemorySaver())

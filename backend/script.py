@@ -1,4 +1,7 @@
+# RODANDO SCRIPT COM STDIO
+
 # tirado daqui: https://github.com/modelcontextprotocol/python-sdk/tree/6b6f34eaa638c08f80a432c3627cc78b778a0ad2?tab=readme-ov-file#writing-mcp-clients
+
 
 
 # typescript # https://github.com/modelcontextprotocol/typescript-sdk
