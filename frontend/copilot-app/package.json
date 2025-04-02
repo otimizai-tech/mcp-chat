@@ -1,0 +1,35 @@
+{
+  "name": "copilot-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@copilotkit/react-core": "^1.8.2",
+    "@copilotkit/react-textarea": "^1.7.1",
+    "@copilotkit/react-ui": "^1.8.2",
+    "@copilotkit/runtime": "^1.8.2",
+    "@trpc/client": "^10.37.0",
+    "fastmcp": "^1.20.5",
+    "lucide-react": "^0.479.0",
+    "next": "^15.2.4",
+    "next-themes": "^0.4.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.6",
+    "react-resizable": "^3.0.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/react-resizable": "^3.0.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
