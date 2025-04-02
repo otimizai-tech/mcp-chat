@@ -1,0 +1,153 @@
+# %%
+"""
+Implementação adaptada do agent.py usando apenas conexão SSE
+com as ferramentas do server.py
+"""
+
+from typing import Literal, Dict, List, Union, Optional
+from typing_extensions import TypedDict
+from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnableConfig
+from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import Command
+from copilotkit import CopilotKitState
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.prebuilt import create_react_agent
+import os
+
+# Define a estrutura de conexão SSE
+
+
+class SSEConnection(TypedDict):
+    url: str
+    transport: Literal["sse"]
+
+
+# Tipo para configuração MCP (apenas SSE)
+MCPConfig = Dict[str, SSEConnection]
+
+
+class AgentState(CopilotKitState):
+    """Define o estado do agente."""
+    mcp_config: Optional[MCPConfig]
+
+
+# Configuração MCP padrão usando SSE
+DEFAULT_MCP_CONFIG: MCPConfig = {
+    "tools": {
+        "addtool": {
+            "url": "http://localhost:8000/sse",
+            "transport": "sse"
+
+        }
+
+    }
+}
+
+llm = ChatOpenAI(
+    model="google/gemini-2.5-pro-exp-03-25:free",
+    openai_api_key="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",
+    openai_api_base="https://openrouter.ai/api/v1",
+    max_completion_tokens=200
+)
+
+
+async def chat_node(state: AgentState, config: RunnableConfig) -> Command[Literal["__end__"]]:
+    """Nó de chat que processa mensagens e executa ferramentas."""
+    print("\n=== Iniciando processamento do chat ===")
+
+    # Obtém configuração MCP do estado ou usa a configuração padrão
+    mcp_config = state.get("mcp_config", DEFAULT_MCP_CONFIG)
+    print(f"Configuração MCP: {mcp_config}")
+    ferramenta = mcp_config.get("tools")
+    print(ferramenta)
+
+    # Processa a mensagem usando o MultiServerMCPClient
+    try:
+        async with MultiServerMCPClient(ferramenta) as mcp_client:
+            print("hi")
+            # Obtém as ferramentas
+            print("Obtendo ferramentas do servidor...")
+            mcp_tools = mcp_client.get_tools()
+            print(f"Ferramentas disponíveis: {[t.name for t in mcp_tools]}")
+
+            # Cria o agente
+            agent = create_react_agent(llm,
+                                           mcp_tools
+                                       )
+
+            # Prepara mensagens para o agente
+            agent_input = {
+                "messages": state["messages"]
+            }
+            print(f"Mensagens para o agente: {agent_input}")
+
+            # Executa o agente
+            print("Executando agente...")
+            agent_response = await agent.ainvoke(agent_input)
+            print(f"Resposta do agente: {agent_response}")
+
+            # Atualiza as mensagens no estado
+            updated_messages = state["messages"] + \
+                agent_response.get("messages", [])
+
+            # Retorna comando para finalizar com mensagens atualizadas
+            return Command(
+                goto=END,
+                update={"messages": updated_messages},
+            )
+
+    except Exception as e:
+        print(f"Erro ao processar mensagem: {e}")
+        import traceback
+        print(f"Stack trace:\n{traceback.format_exc()}")
+        return Command(
+            goto=END,
+            update={"error": str(e)}
+        )
+
+# Define o grafo de fluxo de trabalho
+workflow = StateGraph(AgentState)
+workflow.add_node("chat", chat_node)
+workflow.set_entry_point("chat")
+workflow.add_edge("chat", END)
+
+# Compila o grafo
+graph = workflow.compile()
+
+if __name__ == "__main__":
+    import asyncio
+    from langchain_core.messages import HumanMessage
+
+    async def test_agent():
+        """Testa o agente com uma mensagem simples"""
+        print("\n=== Iniciando teste do agente ===")
+
+        # Define o estado inicial
+        state = AgentState(
+            messages=[
+                HumanMessage(
+                    content="Quanto é 2 + 2? E depois converta 'teste' para maiúsculas.")
+            ],
+            mcp_config=DEFAULT_MCP_CONFIG
+        )
+
+        print(state)
+
+        try:
+            # Executa o agente
+            print("\nExecutando o agente...")
+            response = await graph.ainvoke(state)
+
+            # Imprime a resposta
+            print("\n=== Resposta final do agente ===")
+            print(response)
+        except Exception as e:
+            print(f"\nErro ao executar o agente: {e}")
+            import traceback
+            print(f"Stack trace:\n{traceback.format_exc()}")
+
+    # Executa o teste
+    asyncio.run(test_agent())
+# %%
