@@ -1,7 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 import asyncio
 
-mcp = FastMCP("Teste")
+mcp = FastMCP("teste")
 
 @mcp.tool()
 def add(a: int, b: int) -> int:

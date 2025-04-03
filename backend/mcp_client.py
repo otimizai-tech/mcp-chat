@@ -6,15 +6,23 @@ com as ferramentas do server.py
 
 from typing import Literal, Dict, List, Union, Optional
 from typing_extensions import TypedDict
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
+#from langchain_openai import ChatOpenAI # Se for usar o openrouter
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
 from copilotkit import CopilotKitState
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 import os
+
+# Import Azure configurations from azure.py
+from azure import (
+    AZURE_OPENAI_ENDPOINT,
+    DEPLOYMENT_NAME,
+    API_VERSION,
+    API_KEY
+)
 
 # Define a estrutura de conexão SSE
 class SSEConnection(TypedDict):
@@ -36,11 +44,23 @@ DEFAULT_MCP_CONFIG: MCPConfig = {
     }
 }
 
+'''
 llm = ChatOpenAI(
-    model="mistralai/mistral-small-3.1-24b-instruct:free",  
+    model="google/gemini-2.0-flash-001",  
     openai_api_key="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",  
     openai_api_base="https://openrouter.ai/api/v1"
 )
+'''
+
+llm = AzureChatOpenAI(
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    azure_deployment=DEPLOYMENT_NAME,
+    api_version=API_VERSION,
+    api_key=API_KEY,
+    temperature=0.7,
+    max_tokens=800
+)
+
 
 async def chat_node(state: AgentState, config: RunnableConfig) -> Command[Literal["__end__"]]:
     """Nó de chat que processa mensagens e executa ferramentas."""
