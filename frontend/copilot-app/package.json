@@ -9,11 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@copilotkit/react-core": "^1.8.2",
+    "@copilotkit/react-core": "^1.8.4",
     "@copilotkit/react-textarea": "^1.7.1",
-    "@copilotkit/react-ui": "^1.8.2",
-    "@copilotkit/runtime": "^1.8.2",
+    "@copilotkit/react-ui": "^1.8.4",
+    "@copilotkit/runtime": "^1.8.4",
     "@trpc/client": "^10.37.0",
+    "@types/eventsource": "^1.1.15",
+    "event-source-polyfill": "^1.0.31",
+    "eventsource": "^3.0.6",
     "fastmcp": "^1.20.5",
     "lucide-react": "^0.479.0",
     "next": "^15.2.4",
@@ -25,11 +28,12 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/event-source-polyfill": "^1.0.5",
+    "@types/node": "^20.17.30",
+    "@types/react": "^18.3.20",
     "@types/react-dom": "^18",
     "@types/react-resizable": "^3.0.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.8.2"
   }
 }

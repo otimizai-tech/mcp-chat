@@ -1,40 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Aplicação Frontend Copilotkit chat
 
-## Getting Started
+Este é um projeto [Next.js](https://nextjs.org) integrado com [CopilotKit](https://docs.copilotkit.ai/) para recursos de assistência com IA.
 
-First, run the development server:
+## Visão Geral do Projeto
+
+Esta aplicação frontend combina Next.js com CopilotKit para criar uma interface potencializada por IA. Utiliza:
+
+- Next.js como framework React
+- CopilotKit para interações com IA
+- Integração com OpenRouter API usando modelo Gemini
+- Server-Side Events (SSE) para comunicação com backend
+
+## Arquitetura
+
+### Integração CopilotKit
+
+A aplicação utiliza o runtime do CopilotKit com a seguinte configuração:
+
+- Endpoint da API: `/api/copilotkit`
+- Modelo: `google/gemini-2.5-pro-exp-03-25:free`
+- OpenRouter como provedor da API
+- Comunicação com backend através do `localhost:8001`
+
+### Configuração da API
+
+A API CopilotKit está configurada em `pages/api/copilotkit.ts` com:
+
+- Integração OpenRouter
+- Tratamento de erros
+- Conexão com endpoint remoto do servidor backend
+
+## Começando
+
+1. Primeiro, instale as dependências:
+
+```bash
+npm install
+# ou
+yarn install
+```
+
+2. Execute o servidor de desenvolvimento:
 
 ```bash
 npm run dev
-# or
+# ou
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação estará disponível em [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Documentação da API
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### Endpoint CopilotKit
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+O endpoint `/api/copilotkit` gerencia interações com IA com os seguintes recursos:
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Integração com OpenRouter API
+- Comunicação com backend
+- Tratamento e registro de erros
 
-## Learn More
+## Integração com Backend
 
-To learn more about Next.js, take a look at the following resources:
+O frontend se comunica com o servidor backend através de:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+- URL: `http://localhost:8000/copilotkit_remote`
+- Protocolo: Server-Sent Events (SSE)
+- Configuração de runtime no manipulador CopilotKit
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Saiba Mais
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+- [Documentação CopilotKit](https://docs.copilotkit.ai/)
+- [Documentação Next.js](https://nextjs.org/docs)
+- [Documentação OpenRouter API](https://openrouter.ai/docs)
