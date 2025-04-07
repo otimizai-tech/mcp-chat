@@ -15,11 +15,11 @@ const openai = new OpenAI({
   defaultHeaders: {
     "api-key":
     "Ae9prhY892FmxazFQwX7rK2eauRvKUakIn7nah3nGPFkAhEyPESpJQQJ99BBACYeBjFXJ3w3AAABACOGIyML",
-  },
-});
-*/
-
-const openai = new OpenAI({
+    },
+    });
+    */
+    
+ const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: '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'
 });
@@ -30,11 +30,11 @@ const serviceAdapter = new OpenAIAdapter({
 });
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const runtime = new CopilotRuntime({
+  const runtime = new CopilotRuntime({ // Instanciamento da I.A
     remoteEndpoints: [ 
         { 
           url: "http://localhost:8001/copilotkit_remote",
-        },
+        }
     ],
   });
 

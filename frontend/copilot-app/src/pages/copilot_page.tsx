@@ -62,6 +62,7 @@ function CustomChatInterface() {
         required: true
       }
     ],
+    
     handler: async ({ content }) => {
       setContent(content);
       setIsOpen(true);
@@ -82,7 +83,12 @@ function CustomChatInterface() {
     <div className="flex-1 relative h-[calc(100vh-64px)]">
       <div className="flex h-full">
         <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'w-[calc(100%-350px)]' : 'w-full'}`}>
-          <CopilotChat className="h-full border-r dark:border-gray-700" />
+          <CopilotChat className="h-full border-r dark:border-gray-700"
+          //instructions={"You are assisting the user as best as you can. Answer in the best way possible given the data you have."}
+          labels={{
+            title: "MCP Assistant",
+            initial: "Precisa de Ajuda?",
+          }} />
         </div>
         {(isOpen || isAnimating) && (
           <div 

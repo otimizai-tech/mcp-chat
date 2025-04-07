@@ -15,6 +15,7 @@ from copilotkit import CopilotKitState
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 import os
+import json
 
 # Import Azure configurations from azure.py
 from azure import (
@@ -119,6 +120,16 @@ workflow.add_edge("chat", END)
 # Compila o grafo
 graph = workflow.compile()
 
+def serialize_response(obj):
+    """Serializa objetos para formato JSON."""
+    if hasattr(obj, "content"):
+        return {"content": obj.content, "type": obj.__class__.__name__}
+    if isinstance(obj, dict):
+        return {k: serialize_response(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [serialize_response(item) for item in obj]
+    return obj
+
 if __name__ == "__main__":
     import asyncio
     from langchain_core.messages import HumanMessage
@@ -144,7 +155,8 @@ if __name__ == "__main__":
             
             # Imprime a resposta
             print("\n=== Resposta final do agente ===")
-            print(response)
+            serialized_response = serialize_response(response)
+            print(json.dumps(serialized_response, indent=2, ensure_ascii=False))
         except Exception as e:
             print(f"\nErro ao executar o agente: {e}")
             import traceback
