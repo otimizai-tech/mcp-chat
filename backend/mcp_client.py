@@ -14,6 +14,8 @@ from langgraph.types import Command
 from copilotkit import CopilotKitState
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
+
 import os
 import json
 
@@ -116,52 +118,56 @@ workflow = StateGraph(AgentState)
 workflow.add_node("chat", chat_node)
 workflow.set_entry_point("chat")
 workflow.add_edge("chat", END)
+memory = MemorySaver()
+graph = workflow.compile(checkpointer=memory)
 
 # Compila o grafo
-graph = workflow.compile()
+# graph = workflow.compile()
 
-def serialize_response(obj):
-    """Serializa objetos para formato JSON."""
-    if hasattr(obj, "content"):
-        return {"content": obj.content, "type": obj.__class__.__name__}
-    if isinstance(obj, dict):
-        return {k: serialize_response(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [serialize_response(item) for item in obj]
-    return obj
+# def serialize_response(obj):
+#     """Serializa objetos para formato JSON."""
+#     if hasattr(obj, "content"):
+#         return {"content": obj.content, "type": obj.__class__.__name__}
+#     if isinstance(obj, dict):
+#         return {k: serialize_response(v) for k, v in obj.items()}
+#     if isinstance(obj, list):
+#         return [serialize_response(item) for item in obj]
+#     return obj
 
-if __name__ == "__main__":
-    import asyncio
-    from langchain_core.messages import HumanMessage
+# if __name__ == "__main__":
+#     import asyncio
+#     from langchain_core.messages import HumanMessage
     
-    async def test_agent():
-        """Testa o agente com uma mensagem simples"""
-        print("\n=== Iniciando teste do agente ===")
+#     async def test_agent():
+#         """Testa o agente com uma mensagem simples"""
+#         print("\n=== Iniciando teste do agente ===")
         
-        # Define o estado inicial
-        state = AgentState(
-            messages=[
-                HumanMessage(content="Quanto é 2 + 2? E depois converta 'teste' para maiúsculas.")
-            ],
-            mcp_config=DEFAULT_MCP_CONFIG
-        )
+#         # Define o estado inicial
+#         state = AgentState(
+#             messages=[
+#                 HumanMessage(content="Quanto é 2 + 2? E depois converta 'teste' para maiúsculas.")
+#             ],
+#             mcp_config=DEFAULT_MCP_CONFIG
+#         )
 
-        print(state)
+#         print(state)
         
-        try:
-            # Executa o agente
-            print("\nExecutando o agente...")
-            response = await graph.ainvoke(state)
+#         try:
+#             # Executa o agente
+#             print("\nExecutando o agente...")
+#             response = await graph.ainvoke(state)
             
-            # Imprime a resposta
-            print("\n=== Resposta final do agente ===")
-            serialized_response = serialize_response(response)
-            print(json.dumps(serialized_response, indent=2, ensure_ascii=False))
-        except Exception as e:
-            print(f"\nErro ao executar o agente: {e}")
-            import traceback
-            print(f"Stack trace:\n{traceback.format_exc()}")
+#             # Imprime a resposta
+#             print("\n=== Resposta final do agente ===")
+#             serialized_response = serialize_response(response)
+#             print(json.dumps(serialized_response, indent=2, ensure_ascii=False))
+#         except Exception as e:
+#             print(f"\nErro ao executar o agente: {e}")
+#             import traceback
+#             print(f"Stack trace:\n{traceback.format_exc()}")
             
-    # Executa o teste
-    asyncio.run(test_agent())
+#     # Executa o teste
+#     asyncio.run(test_agent())
+# # %%
+
 # %%
