@@ -114,7 +114,7 @@ function CustomChatInterface() {
 export default function CopilotPage() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <CopilotKit runtimeUrl="/api/copilotkit">
+      <CopilotKit runtimeUrl="/api/copilotkit" agent="mcp_agent">
         <SourcesProvider>
           <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
             <Navbar />

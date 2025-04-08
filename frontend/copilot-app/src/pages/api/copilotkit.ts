@@ -33,8 +33,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const runtime = new CopilotRuntime({ // Instanciamento da I.A
     remoteEndpoints: [ 
         { 
+          url: "http://localhost:8002/copilotkit",
+        },
+        /*
+        { 
           url: "http://localhost:8001/copilotkit_remote",
         }
+        */
     ],
   });
 
