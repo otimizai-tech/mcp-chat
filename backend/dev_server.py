@@ -9,7 +9,7 @@ sdk = CopilotKitRemoteEndpoint(
     agents=[
         LangGraphAgent(
             name="mcp_agent",
-            description="This agent tha uses mcp servers to run tools",
+            description="This agent uses mcp servers to run tools and can interact with UI actions",
             graph=graph,
         )
     ],
