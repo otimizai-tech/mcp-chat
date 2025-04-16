@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mcp_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp_server
+    command: python mcp_server.py
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - otimizai_network
+    restart: unless-stopped
+    volumes:
+      - .:/app
+
+  dev_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dev_server
+    command: python dev_server.py
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - otimizai_network
+    depends_on:
+      - mcp_server
+    restart: unless-stopped
+    volumes:
+      - .:/app
+
+networks:
+  otimizai_network:
+    driver: bridge
