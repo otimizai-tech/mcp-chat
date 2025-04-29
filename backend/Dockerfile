@@ -5,9 +5,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY mcp_client.py .
+COPY mcp_server.py .
+COPY dev_server.py .
 
 EXPOSE 8002
 EXPOSE 8000
 
-CMD ["python", "dev_server.py"]

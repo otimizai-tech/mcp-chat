@@ -1,7 +1,33 @@
 #%%
 """
 Implementação adaptada do agent.py usando apenas conexão SSE
-com as ferramentas do server.py
+com as ferramentas MCP do server.py
+"""
+
+"""
+MCP Client Implementation
+
+Este módulo implementa um cliente MCP especializado que integra diferentes componentes:
+1. Comunicação SSE (Server-Sent Events) para interação com servidores de ferramentas
+2. Integração com LangChain e Azure OpenAI para processamento de linguagem natural
+3. Sistema de gerenciamento de estado para copilot
+4. Execução de ferramentas remotas via MCP
+
+Principais funcionalidades:
+- Estabelece conexão com servidores MCP via SSE
+- Gerencia ferramentas remotas e ações do copilot
+- Processa mensagens usando modelos de linguagem
+- Executa ferramentas de forma assíncrona
+- Implementa fallback para agente React em caso de falhas
+
+O fluxo de trabalho é gerenciado através de um grafo de estados que:
+1. Recebe mensagens do usuário
+2. Processa usando LLM
+3. Identifica e executa ferramentas necessárias
+4. Retorna respostas processadas
+
+Este módulo é fundamental para a infraestrutura do copilot, servindo como ponte
+entre a interface do usuário e os serviços de processamento de linguagem natural.
 """
 
 from typing import Literal, Dict, List, Union, Optional
@@ -43,7 +69,8 @@ class AgentState(CopilotKitState):
 # Configuração MCP padrão usando SSE
 DEFAULT_MCP_CONFIG: MCPConfig = {
     "tools": {
-        "url": "http://localhost:8000/sse",
+        #"url": "http://localhost:8000/sse",
+        "url": "http://mcp_server:8000/sse",
         "transport": "sse"
     }
 }
