@@ -1,5 +1,3 @@
-import { Typewriter } from 'react-simple-typewriter';
-
 interface RawCellProps {
   metadata: Record<string, any>;
   source: string[];
@@ -8,31 +6,25 @@ interface RawCellProps {
 }
 
 export function RawCell({ source, isUser, onClick }: RawCellProps) {
-  const message = source[0].replace(/^(User|model): /, '');
-  
+  // More robust handling of undefined or null values
+  const message =
+    source && Array.isArray(source) && source.length > 0 && source[0]
+      ? typeof source[0] === "string"
+        ? source[0].replace(/^(User|model): /, "")
+        : String(source[0])
+      : "";
+
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
         className={`max-w-[80%] p-4 rounded-2xl whitespace-pre-wrap break-words ${
           isUser
-            ? 'bg-blue-500 text-white rounded-br-none'
-            : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'
+            ? "bg-blue-500 text-white rounded-br-none"
+            : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none"
         }`}
         onClick={onClick}
       >
-        {isUser ? (
-          <span className="text-base">{message}</span>
-        ) : (
-          <span className="text-base">
-            <Typewriter
-              words={[message]}
-              cursor={false}
-              cursorStyle="_"
-              typeSpeed={10}
-              delaySpeed={1000}
-            />
-          </span>
-        )}
+        <span className="text-base">{message}</span>
       </div>
     </div>
   );

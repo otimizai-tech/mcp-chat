@@ -2,8 +2,9 @@
 
 import "@copilotkit/react-ui/styles.css";
 import { Navbar } from "../components/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CopilotChat } from "@copilotkit/react-ui";
+
 import {
   CopilotKit,
   useCopilotAction,
@@ -11,12 +12,12 @@ import {
   useCoAgent,
 } from "@copilotkit/react-core";
 import { ThemeProvider } from "next-themes";
-import { SourcesProvider, useSourceManager } from "../hooks/useSourceManager";
-import DataSource from "../components/Sources";
+import { SourcesProvider } from "../hooks/useSourceManager";
 import React from "react";
 import { CanvasCopilot } from "../components/CanvasCopilot";
 import { motion } from "framer-motion";
 import { TextMessage, MessageRole } from "@copilotkit/runtime-client-gql";
+import { RawCell } from "../components/cells/RawCell";
 
 function CustomChatInterface() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,9 +25,14 @@ function CustomChatInterface() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [userInput, setUserInput] = useState("");
+  const [messages, setMessages] = useState<{
+    content: string;
+    role: MessageRole;
+    timestamp: number;
+  }[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const { visibleMessages } = useCopilotChat();
 
-  // Use the agent directly similar to HomeView.tsx
   const { run: runChatAgent } = useCoAgent({
     name: "mcp_agent",
   });
@@ -61,23 +67,68 @@ function CustomChatInterface() {
   };
 
   useEffect(() => {
-    if (visibleMessages.length > 0 && !hasInteracted) {
-      setHasInteracted(true);
+    if (visibleMessages.length > 0) {
+      const lastMessage = visibleMessages[visibleMessages.length - 1];
+      console.log('Nova mensagem recebida:', lastMessage);
+      
+      // Só aplica a lógica de substituição para mensagens do modelo
+      const messageRole = (lastMessage as { role?: MessageRole }).role;
+      if (messageRole && messageRole !== MessageRole.User) {
+        setMessages(prev => {
+          // Remove apenas mensagens anteriores do modelo
+          const filtered = prev.filter(m => 
+            m.role === MessageRole.User || // Mantém todas as mensagens do usuário
+            !(m.role === lastMessage.role && 
+              Math.abs(m.timestamp - Date.now()) < 5000)
+          );
+          
+          return [...filtered, {
+            content: lastMessage.content,
+            role: lastMessage.role,
+            timestamp: Date.now()
+          }];
+        });
+      }
+
+      if (!hasInteracted) {
+        setHasInteracted(true);
+      }
     }
   }, [visibleMessages, hasInteracted]);
 
-  const sendMessageToChat = (message: string) => {
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      console.log('Scroll atualizado para a última mensagem');
+    }
+  }, [messages]);
+
+  const sendMessageToChat = async (message: string) => {
     if (!message.trim()) return;
 
-    runChatAgent(() => {
-      return new TextMessage({
-        role: MessageRole.User,
-        content: message,
-      });
-    });
+    console.log('Enviando mensagem:', message);
 
-    setHasInteracted(true);
-    setUserInput("");
+    try {
+      // Adiciona a mensagem do usuário imediatamente
+      setMessages(prev => [...prev, {
+        content: message,
+        role: MessageRole.User,
+        timestamp: Date.now()
+      }]);
+
+      await runChatAgent(() => {
+        console.log('Executando chatAgent com a mensagem:', message);
+        return new TextMessage({
+          role: MessageRole.User,
+          content: message,
+        });
+      });
+
+      setHasInteracted(true);
+      setUserInput("");
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+    }
   };
 
   // Função para lidar com a submissão inicial da mensagem
@@ -159,18 +210,51 @@ function CustomChatInterface() {
         ) : (
           <>
             <div
-              className={`h-full transition-all duration-500 ease-in-out ${
+              className={`h-full transition-all duration-500 ease-in-out flex flex-col ${
                 isOpen ? "w-[calc(100%-350px)]" : "w-full"
               }`}
             >
-              <CopilotChat
-                className="h-full border-r dark:border-gray-700"
-                labels={{
-                  title: "MCP Assistant",
-                  initial: "Como posso ajudar?",
-                  placeholder: "Digite sua pergunta aqui...",
-                }}
-              />
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 overflow-y-auto p-6 space-y-4"
+              >
+                {messages.map((message, index) => (
+                  <RawCell
+                    key={`${message.content}-${message.timestamp}`}
+                    source={[message.content]}
+                    isUser={message.role === MessageRole.User}
+                    metadata={{}}
+                  />
+                ))}
+              </div>
+              
+              <div className="border-t bg-white p-4 dark:bg-gray-800 dark:border-gray-700">
+                <div className="max-w-4xl mx-auto flex items-center space-x-4">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && userInput.trim()) {
+                          sendMessageToChat(userInput);
+                        }
+                      }}
+                      placeholder="Digite sua mensagem..."
+                      className="w-full p-4 pr-24 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400"
+                    />
+                    <button
+                      onClick={() => userInput.trim() && sendMessageToChat(userInput)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors flex items-center justify-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             {(isOpen || isAnimating) && (
               <div
