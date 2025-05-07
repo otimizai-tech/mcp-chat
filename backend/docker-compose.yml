@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mcp_server:
@@ -11,6 +11,8 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
     networks:
       - otimizai_network
     restart: unless-stopped
@@ -27,6 +29,8 @@ services:
       - "8002:8002"
     environment:
       - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
     networks:
       - otimizai_network
     depends_on:

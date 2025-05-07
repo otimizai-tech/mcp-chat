@@ -45,14 +45,16 @@ from langchain_core.messages import ToolMessage
 
 import os
 import json
+from dotenv import load_dotenv
 
-# Import Azure configurations from azure.py
-from azure import (
-    AZURE_OPENAI_ENDPOINT,
-    DEPLOYMENT_NAME,
-    API_VERSION,
-    API_KEY
-)
+# Load environment variables from .env file
+load_dotenv()
+
+# Get Azure configurations from environment variables
+AZURE_OPENAI_ENDPOINT = os.getenv('AZURE_OPENAI_ENDPOINT')
+DEPLOYMENT_NAME = os.getenv('AZURE_DEPLOYMENT_NAME')
+API_VERSION = os.getenv('AZURE_API_VERSION')
+API_KEY = os.getenv('AZURE_API_KEY')
 
 # Define a estrutura de conexão SSE
 class SSEConnection(TypedDict):
@@ -185,9 +187,9 @@ async def chat_node(state: AgentState, config: RunnableConfig) -> Command[Litera
                     
                 except Exception as tool_error:
                     print(f"Erro ao executar ferramenta diretamente: {tool_error}")
-                    print("Tentando usar o agente React como fallback...")
+                    print("Tentando usar o agente reAct como fallback...")
                     
-                    # Se der errado: Usar o agente React
+                    # Se der errado: Usar o agente reAct
                     tool_agent = create_react_agent(llm, mcp_tool)
                     
                     # Executa o agente com as mensagens originais
