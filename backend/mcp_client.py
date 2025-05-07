@@ -23,7 +23,7 @@ Principais funcionalidades:
 O fluxo de trabalho é gerenciado através de um grafo de estados que:
 1. Recebe mensagens do usuário
 2. Processa usando LLM
-3. Identifica e executa ferramentas necessárias
+3. Identifica e executa ferramentas mcp ou actions necessárias
 4. Retorna respostas processadas
 
 Este módulo é fundamental para a infraestrutura do copilot, servindo como ponte
@@ -80,7 +80,7 @@ DEFAULT_MCP_CONFIG: MCPConfig = {
 '''
 llm = ChatOpenAI(
     model="google/gemini-2.0-flash-001",  
-    openai_api_key="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",  
+    openai_api_key="your_key",  
     openai_api_base="https://openrouter.ai/api/v1"
 )
 '''
