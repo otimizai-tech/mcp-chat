@@ -39,6 +39,22 @@ services:
     volumes:
       - .:/app
 
+  gitingest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gitingest
+    command: python gitingest_server.py
+    ports:
+      - "8003:8003"
+    environment:
+      - ALLOWED_HOSTS=localhost
+    networks:
+      - otimizai_network
+    restart: unless-stopped
+    volumes:
+      - .:/app
+
 networks:
   otimizai_network:
     driver: bridge

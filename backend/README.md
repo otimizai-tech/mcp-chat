@@ -245,3 +245,75 @@ Ambos os serviços montam o diretório atual (`.`) no caminho `/app` dentro dos 
 - Desenvolvimento em tempo real
 - Persistência de dados
 - Hot-reload das alterações
+
+# Gitingest Server
+
+O `gitingest_server.py` é um servidor FastAPI que expõe a funcionalidade de ingestão Git através de uma API REST. Este servidor facilita a ingestão de repositórios remotos ou locais através de endpoints HTTP.
+
+## Funcionalidades
+
+- Endpoint REST para ingestão de repositórios Git
+- Suporte a padrões de inclusão/exclusão de arquivos
+- Processamento de URLs do GitHub com formato de árvore (tree)
+- Extração automática de sumários, estrutura de arquivos e conteúdo
+
+## Endpoints Principais
+
+### GET /
+
+Endpoint de verificação de saúde, retorna uma mensagem se o servidor estiver funcionando.
+
+### POST /ingest
+
+Endpoint principal para ingestão de repositórios.
+
+**Parâmetros da Requisição:**
+
+```json
+{
+  "url": "string",                  // URL ou caminho do repositório (obrigatório)
+  "include_patterns": ["string"],   // Padrões de arquivo a incluir (opcional)
+  "exclude_patterns": ["string"],   // Padrões de arquivo a excluir (opcional)
+  "branch": "string"                // Nome do branch a ser usado (opcional)
+}
+```
+
+**Resposta:**
+
+```json
+{
+  "summary": {},   // Resumo do repositório
+  "tree": {},      // Estrutura de arquivos em árvore
+  "content": {}    // Conteúdo dos arquivos
+}
+```
+
+## Como Executar
+
+O servidor está presente no docker também, mas caso queira rodar o arquivo de forma independente, basta executar o comando abaixo:
+
+```bash
+python gitingest_server.py
+```
+
+O servidor será iniciado em:
+- Host: 0.0.0.0
+- Porta: 8003
+
+## Exemplo de Uso
+
+A ingestão pode ser realizada através de requisição HTTP:
+
+```bash
+curl -X POST http://localhost:8003/ingest \
+-H "Content-Type: application/json" \
+-d '{
+  "url": "link_do_repositório"
+}'
+```
+
+### Recursos Avançados
+
+- **URLs com Formato Tree**: O servidor processa automaticamente URLs do GitHub com formato `/tree/branch/path`
+- **Inclusão Automática**: Arquivos markdown (*.md) são sempre incluídos, independentemente dos filtros
+- **Filtragem de Diretórios**: Suporte para processar apenas subdiretórios específicos de um repositório
