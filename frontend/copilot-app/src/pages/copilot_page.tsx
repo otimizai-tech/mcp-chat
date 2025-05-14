@@ -134,6 +134,9 @@ function CustomChatInterface() {
         },
       ]);
 
+      // Clear the input immediately after sending the message
+      setUserInput("");
+
       await runChatAgent(() => {
         console.log("Executando chatAgent com a mensagem:", message);
         return new TextMessage({
@@ -143,7 +146,6 @@ function CustomChatInterface() {
       });
 
       setHasInteracted(true);
-      setUserInput("");
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
     }

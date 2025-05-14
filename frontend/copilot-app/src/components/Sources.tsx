@@ -9,11 +9,9 @@ interface DataSourceProps {
   sources: Source[];
 }
 
-// Function to get color based on the first letter (A-Z)
 const getLetterColor = (letter: string): string => {
   const normalizedLetter = letter.toLowerCase();
 
-  // Color map for each letter
   const letterColors: { [key: string]: string } = {
     a: "rgb(255, 179, 179)", // Light red
     b: "rgb(255, 223, 179)", // Light orange
@@ -43,13 +41,10 @@ const getLetterColor = (letter: string): string => {
     z: "rgb(191, 255, 179)", // Light mint green
   };
 
-  // Return the color for the letter or a default color if letter not found
   return letterColors[normalizedLetter] || "rgb(200, 200, 200)";
 };
 
-// Function to get contrasting text color (black or white) based on background
 const getContrastColor = (bgColor: string): string => {
-  // Extract RGB values from the format "rgb(r, g, b)"
   const rgb = bgColor.match(/\d+/g);
   if (!rgb || rgb.length < 3) return "black";
 
@@ -57,7 +52,6 @@ const getContrastColor = (bgColor: string): string => {
   const g = parseInt(rgb[1]);
   const b = parseInt(rgb[2]);
 
-  // Calculate luminance - if bright background use dark text, otherwise light text
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? "black" : "white";
 };
